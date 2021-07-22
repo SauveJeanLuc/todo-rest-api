@@ -48,19 +48,18 @@ app.post("/api/items", (req, res)=>{
     }
 
     items.push(item);
-    res.send(item)
-    
+    res.send(item);
 })
 
 
 //Function to validate an item
 function validateItem(item) {
     const schema = Joi.object({
-        id: Joi.number(),
-        completed: Joi.boolean().required(),
-        date: Joi.date().required(),
-        task: Joi.string().required()
-    })
+      id: Joi.number(),
+      completed: Joi.boolean().truthy("true").falsy("false"),
+      date: Joi.date().format(["YYYY/MM/DD", "DD-MM-YYYY"]).utc().required(),
+      task: Joi.string().required(),
+    });
 
     return schema.validate(item);
 }
