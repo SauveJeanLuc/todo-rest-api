@@ -1,0 +1,23 @@
+{
+  "name": "assignment-draft",
+  "version": "1.0.0",
+  "description": "to prepare for internship",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SauveJeanLuc/assignment-draft.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SauveJeanLuc/assignment-draft/issues"
+  },
+  "homepage": "https://github.com/SauveJeanLuc/assignment-draft#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "joi": "^17.4.1"
+  }
+}
