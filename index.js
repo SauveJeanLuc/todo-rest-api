@@ -75,6 +75,18 @@ app.put("/api/items/:id", (req,res)=>{
 })
 
 //Delete an Item
+app.delete('/api/items/:id', (req,res)=>{
+    //Check if Item exists
+    const item = items.find( (c) => c.id === parseInt(req.params.id));
+    if(!item) {
+        return res.status(404).send('The item with The given ID is not available')
+    }
+
+    const index = items.indexOf(item);
+    items.splice(index, 1);
+    //Return the same item
+    res.send(item);
+})
 
 
 //Function to validate an item
@@ -88,8 +100,6 @@ function validateItem(item) {
 
     return schema.validate(item);
 }
-
-// 
 
 
 
