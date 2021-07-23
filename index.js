@@ -51,6 +51,31 @@ app.post("/api/items", (req, res)=>{
     res.send(item);
 })
 
+// Edit an Item
+app.put("/api/items/:id", (req,res)=>{
+
+    //Check if Item Exists
+
+    const item = items.find((c) => c.id === parseInt(req.params.id));
+    if(!item){
+        return res.status(404).send("The item with the given ID was not found");
+    }
+    //Validate Item
+
+    const { error } = validateItem(req.body)
+    if(error){
+        return res.status(404).send(error.details[0].message);
+    }
+    //Update Item
+    item.completed = req.body.completed;
+    item.date = req.body.date;
+    item.task = req.body.task;
+    //Return Item
+    res.send(item)
+})
+
+//Delete an Item
+
 
 //Function to validate an item
 function validateItem(item) {
@@ -63,6 +88,9 @@ function validateItem(item) {
 
     return schema.validate(item);
 }
+
+// 
+
 
 
 //Port and listen to port
