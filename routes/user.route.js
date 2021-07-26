@@ -51,8 +51,11 @@ router.post("/", async (req, res) => {
       return res.status(400).send(error.details[0].message);
     }
 
-    let user = await User.findOne({ email: req.body.email });
+    let user = await User.findOne({ email: req.body.email});
     if (user) return res.status(400).send("User already registered.");
+
+    user = await User.findOne({ userName: req.body.userName });
+    if (user) return res.status(400).send("UserName already taken");
 
     user = new User({
       createdDate: new Date(Date.now()),
@@ -69,12 +72,13 @@ router.post("/", async (req, res) => {
 
     res.send(_.pick(user, ["userName", "email"]));
   } catch (err) {
-    res.send(
-      formatResult({
-        status: 500,
-        message: err,
-      })
-    );
+    res
+      .send(
+        formatResult({
+          status: 500,
+          message: err,
+        })
+      );
   }
 });
 

@@ -68,12 +68,13 @@ router.post("/", async (req, res)=>{
         item = await item.save();
         res.send(item);
     } catch (err) {
-      res.send(
-        formatResult({
-          status: 500,
-          message: err
-        })
-      );
+      res
+        .send(
+          formatResult({
+            status: 500,
+            message: err,
+          })
+        );
     }
 
 })
