@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 const _ = require("lodash");
 const { User, validate } = require("../models/user.model");
 const mongoose = require("mongoose");
@@ -17,7 +18,7 @@ router.get("/:id", async (req, res) => {
     if (!user)
       return res.send(formatResult({ status: 404, message: "User not found" }));
 
-    res.send(user);
+    res.send(_.pick(user, ["userName", "email"]));
   } catch (err) {
     res.send(
       formatResult({
@@ -31,7 +32,7 @@ router.get("/:id", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const users = await User.find().sort("createdDate");
-    res.send(users);
+    res.send(_.pick(users, ["userName", "email"]));
   } catch (err) {
     res.send(
       formatResult({
@@ -60,6 +61,9 @@ router.post("/", async (req, res) => {
       email: req.body.email,
       password: req.body.password,
     });
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(user.password, salt);
 
     user = await user.save();
 
@@ -102,7 +106,7 @@ router.put("/:id", async (req, res) => {
       formatResult({
         status: 200,
         message: "User updated successfully",
-        data: user,
+        data: _.pick(user, ["userName", "email"]),
       })
     );
   } catch (err) {
