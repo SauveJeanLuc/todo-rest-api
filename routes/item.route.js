@@ -28,7 +28,7 @@ router.get("/:id", async (req, res) => {
     res.send(
       formatResult({
         status: 500,
-        message: error,
+        message: err,
       })
     );
   }
@@ -43,7 +43,7 @@ router.get("/", async (req, res) => {
     res.send(
       formatResult({
         status: 500,
-        message: error,
+        message: err,
       })
     );
   }
@@ -71,7 +71,7 @@ router.post("/", async (req, res)=>{
       res.send(
         formatResult({
           status: 500,
-          message: error
+          message: err
         })
       );
     }
@@ -118,7 +118,7 @@ router.put("/:id",async (req, res) => {
         res.send(
             formatResult({
                 status: 500,
-                message: error,
+                message: err,
             })
         ); 
     }
