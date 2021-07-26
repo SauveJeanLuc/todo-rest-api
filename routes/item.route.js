@@ -93,7 +93,7 @@ router.put("/:id",async (req, res) => {
       const item = await Item.findByIdAndUpdate(
         req.params.id,
         {
-          completedDate: req.body.isCompleted ? Date.now(): null,
+          completedDate: req.body.isCompleted===true||req.body.isCompleted==="true" ? new Date(): null,
           updatedDate: new Date(Date.now()),
           isCompleted: req.body.isCompleted,
           deadline: req.body.deadline,
@@ -118,7 +118,7 @@ router.put("/:id",async (req, res) => {
         res.send(
             formatResult({
                 status: 500,
-                message: err,
+                message: err
             })
         ); 
     }
