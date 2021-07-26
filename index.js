@@ -1,18 +1,50 @@
-//Imprt Dependencies
-const Joi = require('joi');
-const express = require('express');
-const app = express();
+//Import Dependencies
+const mongoose = require('mongoose');
 
-app.use(express.json());
+//Connect to MongoDB
+mongoose
+    .connect("mongodb://localhost:27017/todo")
+    .then(() => console.log("Connected to MongoDB..."))
+    .catch((err)=> console.error("Could not Connect to MongoDB"));
 
+//Create a Schema
 
-//Database
+// const items =[
+//     { id: 1, completed: true, date: "2021-07-22", task: "Complete Restful API using Express" },
+//     { id: 2, completed: false, date: "2021-07-23", task: "CRUD with Mongoose" },
+//     { id: 3, completed: false, date: "2021-07-24", task: "Authentication and Authorization" }
+// ]
 
-const items =[
-    { id: 1, completed: true, date: "2021-07-22", task: "Complete Restful API using Express" },
-    { id: 2, completed: false, date: "2021-07-23", task: "CRUD with Mongoose" },
-    { id: 3, completed: false, date: "2021-07-24", task: "Authentication and Authorization" }
-]
+const itemSchema = new mongoose.Schema({
+  isCompleted: {
+    type: Boolean, //Check
+    required: true,
+    default: false, //Check
+  },
+  creationDate: {
+    type: Date,
+    //Configure to be auto written
+  },
+  updationDate: {
+    type: Date,
+    //Configure to be auto written
+  },
+  completionDate: {
+      type: Date,
+      //Auto Write if completed turns true, Else write null if isCompleted goes false
+  },
+  targetDate:{
+      type: Date,
+      required: true,
+      //Default, tomorrow
+  },
+  task: {
+      type: String,
+      required: true, 
+      minlength: 3, 
+      maxlength: 255
+  }
+});
 
 // ************* CRUD OPERATIONS ******************//
 
