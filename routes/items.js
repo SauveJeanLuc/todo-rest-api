@@ -125,10 +125,9 @@ app.delete("/:id", async (req, res) => {
 //Function to validate an item
 function validateItem(item) {
     const schema = Joi.object({
-      id: Joi.number(),
-      completed: Joi.boolean().truthy("true").falsy("false"),
-      date: Joi.date().required(),
-      task: Joi.string().required(),
+      isCompleted: Joi.boolean().truthy("true").falsy("false"),
+      targetDate: Joi.date().required(),
+      task: Joi.string().required()
     });
 
     return schema.validate(item);
