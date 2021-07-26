@@ -30,6 +30,8 @@ const itemSchema = new mongoose.Schema({
       type: Date,
       required: true,
       //Default, tomorrow
+      //Past can't be set
+      //Maximum, one year
   },
   task: {
       type: String,
@@ -44,99 +46,67 @@ const Item = mongoose.model('Item', itemSchema);
 // ************* CRUD OPERATIONS ******************//
 
 // Get a single item by Id
-// app.get("/api/items/:id", (req, res)=>{
-//     const item = items.find( (c)=> c.id === parseInt(req.params.id));
-
-//     if (!item) 
-//         return res.status(404).send('The item with given Id is not found')
-//     res.send(item);
-
-// });
 
 async function getItemById(id){
     const item = await Item
-        .find({id: id})
+        .findById(id)
 
     console.log(item);
 }
 
 // Get All items in the list
-// app.get("/api/items/", (req, res)=>{
-//     res.send(items);
-// })
+
+async function getAllItems(){
+    const items = await Item
+        .findAll();
+
+    console.log(items);
+}
 
 // Create an Item
-app.post("/api/items", (req, res)=>{
 
-    const { error } = validateItem(req.body);
-
-    if (error){
-        return res.status(400).send(error.details[0].message);
-    }
-
-    const item = {
-        id: items.length + 1,
-        completed: req.body.completed,
-        date: req.body.date,
-        task: req.body.task
-    }
-
-    items.push(item);
-    res.send(item);
-})
-
-// Edit an Item
-app.put("/api/items/:id", (req,res)=>{
-
-    //Check if Item Exists
-
-    const item = items.find((c) => c.id === parseInt(req.params.id));
-    if(!item){
-        return res.status(404).send("The item with the given ID was not found");
-    }
-    //Validate Item
-
-    const { error } = validateItem(req.body)
-    if(error){
-        return res.status(404).send(error.details[0].message);
-    }
-    //Update Item
-    item.completed = req.body.completed;
-    item.date = req.body.date;
-    item.task = req.body.task;
-    //Return Item
-    res.send(item)
-})
-
-//Delete an Item
-app.delete('/api/items/:id', (req,res)=>{
-    //Check if Item exists
-    const item = items.find( (c) => c.id === parseInt(req.params.id));
-    if(!item) {
-        return res.status(404).send('The item with The given ID is not available')
-    }
-
-    const index = items.indexOf(item);
-    items.splice(index, 1);
-    //Return the same item
-    res.send(item);
-})
-
-
-//Function to validate an item
-function validateItem(item) {
-    const schema = Joi.object({
-      id: Joi.number(),
-      completed: Joi.boolean().truthy("true").falsy("false"),
-      date: Joi.date().required(),
-      task: Joi.string().required(),
+async function createItem(){
+    const item = new Item({
+      targetDate: "2021/08/05",
+      task: "Submit internship assignment"
     });
 
-    return schema.validate(item);
+    try{
+        const result = await item.save();
+        console.log(result) // Remove
+    }
+    catch(ex){
+        for(field in ex.errors)
+            console.log(ex.errors[field].message);
+    }
 }
+
+// Edit an Item
+async function updateItem(id){
+
+    const item = Item.findOneAndUpdate(id, {new: true, useFindAndModify: false},{
+        $set: {
+            isCompleted: true,
+            targetDate: "2021/09/05"
+        }
+    })
+
+    console.log(item)
+}
+
+//Delete an Item
+
+async function removeItem(id){
+
+    const item = await Item.findByIdAndRemove(id);
+    console.log(item)
+}
+
+//Function to run for test
+
 
 
 
 //Port and listen to port
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Listening on port ${port}`))
+// const port = process.env.PORT || 3000;
+// app.listen(port, () => console.log(`Listening on port ${port}`))
