@@ -107,12 +107,6 @@ app.put("/api/items/:id",async (req, res) => {
 
 //Delete an Item
 
-async function removeItem(id){
-
-    const item = await Item.findByIdAndRemove(id);
-    console.log(item)
-}
-
 app.delete("/api/items/:id", (req, res) => {
 
   const item = await Item.findByIdAndRemove(req.params.id);
@@ -140,6 +134,3 @@ function validateItem(item) {
 
 
 module.exports = router;
-//Port and listen to port
-// const port = process.env.PORT || 3000;
-// app.listen(port, () => console.log(`Listening on port ${port}`))
