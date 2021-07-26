@@ -1,14 +1,11 @@
-//Import Dependencies
+//import dependencies
 const mongoose = require('mongoose');
-
-//Connect to MongoDB
-mongoose
-    .connect("mongodb://localhost:27017/todo")
-    .then(() => console.log("Connected to MongoDB..."))
-    .catch((err)=> console.error("Could not Connect to MongoDB"));
+const express = require('express');
+const router = express.Router();
 
 //Create a Schema
-const itemSchema = new mongoose.Schema({
+
+const Item = mongoose.model('Item', new mongoose.Schema({
   isCompleted: {
     type: Boolean, //Check
     required: true,
@@ -39,60 +36,74 @@ const itemSchema = new mongoose.Schema({
       minlength: 3, 
       maxlength: 255
   }
-});
-
-const Item = mongoose.model('Item', itemSchema);
+    }) 
+);
 
 // ************* CRUD OPERATIONS ******************//
 
 // Get a single item by Id
 
-async function getItemById(id){
-    const item = await Item
-        .findById(id)
+app.get("/api/items/:id", async (req, res) => {
+  const item = await Item.findById(req.params.id)
 
-    console.log(item);
-}
+  if (!item) return res.status(404).send("The item with given Id is not found");
+  res.send(item);
+});
 
 // Get All items in the list
 
-async function getAllItems(){
-    const items = await Item
-        .findAll();
-
-    console.log(items);
-}
+router.get("/", async (req, res) => {
+  const items = await Item.find().sort('targetDate');
+  res.send(items);
+});
 
 // Create an Item
+app.post("/api/items",async (req, res)=>{
 
-async function createItem(){
-    const item = new Item({
-      targetDate: "2021/08/05",
-      task: "Submit internship assignment"
-    });
+    const { error } = validateItem(req.body);
 
-    try{
-        const result = await item.save();
-        console.log(result) // Remove
+    if (error){
+        return res.status(400).send(error.details[0].message);
     }
-    catch(ex){
-        for(field in ex.errors)
-            console.log(ex.errors[field].message);
-    }
-}
+
+    let item = new Item({
+        //Set Auto complete dates
+        isCompleted: req.body.isCompleted,
+        targetDate: req.body.targetDate,
+        task: req.body.task
+    }) 
+
+    item = await item.save();
+    res.send(item);
+})
 
 // Edit an Item
-async function updateItem(id){
 
-    const item = Item.findOneAndUpdate(id, {new: true, useFindAndModify: false},{
+app.put("/api/items/:id",async (req, res) => {
+
+  //Validate Item
+  const { error } = validateItem(req.body);
+  if (error) {
+    return res.status(404).send(error.details[0].message);
+  }
+
+  const item = await Item.findOneAndUpdate(
+    id,
+    { new: true, useFindAndModify: false },
+    {
         $set: {
-            isCompleted: true,
-            targetDate: "2021/09/05"
-        }
-    })
+          isCompleted: req.body.isCompleted,
+          targetDate: req.body.targetDate
+        },
+    }
+  );
 
-    console.log(item)
-}
+  if (!item) {
+    return res.status(404).send("The item with the given ID was not found");
+  }
+  
+  res.send(item);
+});
 
 //Delete an Item
 
@@ -102,11 +113,33 @@ async function removeItem(id){
     console.log(item)
 }
 
-//Function to run for test
+app.delete("/api/items/:id", (req, res) => {
+
+  const item = await Item.findByIdAndRemove(req.params.id);
+
+  if (!item) {
+    return res.status(404).send("The item with The given ID is not available");
+  }
+
+  //Return the same item
+  res.send(item);
+});
+
+//Function to validate an item
+function validateItem(item) {
+    const schema = Joi.object({
+      id: Joi.number(),
+      completed: Joi.boolean().truthy("true").falsy("false"),
+      date: Joi.date().required(),
+      task: Joi.string().required(),
+    });
+
+    return schema.validate(item);
+}
 
 
 
-
+module.exports = router;
 //Port and listen to port
 // const port = process.env.PORT || 3000;
 // app.listen(port, () => console.log(`Listening on port ${port}`))
