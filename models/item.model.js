@@ -9,10 +9,10 @@ const Item = mongoose.model(
       default: false
     },
     createdDate: {
-      type: Date,
+      type: Date
     },
     updatedDate: {
-      type: Date,
+      type: Date
     },
     completionDate: {
       type: Date,
@@ -20,10 +20,7 @@ const Item = mongoose.model(
     },
     deadline: {
       type: Date,
-      required: true,
-      //Default, tomorrow
-      //Past can't be set
-      //Maximum, one year
+      required: true
     },
     task: {
       type: String,
@@ -35,11 +32,11 @@ const Item = mongoose.model(
   })
 );
 
-//Function to validate an item
+
 function validateItem(item) {
     const schema = Joi.object({
       isCompleted: Joi.boolean().truthy("true").falsy("false"),
-      deadline: Joi.date().min(Date.now).required(),
+      deadline: Joi.date().min('now').max(moment().add(1,'year')).required(),
       task: Joi.string().required()
     });
 
