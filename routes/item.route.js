@@ -62,7 +62,7 @@ router.post("/", async (req, res)=>{
             createdDate: new Date(Date.now()),
             updatedDate: new Date(Date.now()),
             deadline: req.body.deadline,
-            task: req.body.task,
+            task: req.body.task
         });
 
         item = await item.save();
@@ -71,7 +71,7 @@ router.post("/", async (req, res)=>{
       res.send(
         formatResult({
           status: 500,
-          message: error,
+          message: error
         })
       );
     }
