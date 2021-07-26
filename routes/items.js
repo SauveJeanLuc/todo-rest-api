@@ -2,6 +2,9 @@
 const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
+const app = express();
+
+app.use(express.json());
 
 //Create a Schema
 
@@ -43,7 +46,7 @@ const Item = mongoose.model('Item', new mongoose.Schema({
 
 // Get a single item by Id
 
-app.get("/api/items/:id", async (req, res) => {
+app.get("/:id", async (req, res) => {
   const item = await Item.findById(req.params.id)
 
   if (!item) return res.status(404).send("The item with given Id is not found");
@@ -58,7 +61,7 @@ router.get("/", async (req, res) => {
 });
 
 // Create an Item
-app.post("/api/items",async (req, res)=>{
+app.post("/",async (req, res)=>{
 
     const { error } = validateItem(req.body);
 
@@ -79,7 +82,7 @@ app.post("/api/items",async (req, res)=>{
 
 // Edit an Item
 
-app.put("/api/items/:id",async (req, res) => {
+app.put("/:id",async (req, res) => {
 
   //Validate Item
   const { error } = validateItem(req.body);
@@ -107,7 +110,7 @@ app.put("/api/items/:id",async (req, res) => {
 
 //Delete an Item
 
-app.delete("/api/items/:id", (req, res) => {
+app.delete("/:id", async (req, res) => {
 
   const item = await Item.findByIdAndRemove(req.params.id);
 
