@@ -1,52 +1,53 @@
 //import dependencies
+const Joi = require("joi");
 const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
-const app = express();
 
-app.use(express.json());
+const {formatResult} = require("../utils/import")
+const {validateObjectId} = require("../utils/import");
 
 //Create a Schema
 
-const Item = mongoose.model('Item', new mongoose.Schema({
-  isCompleted: {
-    type: Boolean, //Check
-    required: true,
-    default: false, //Check
-  },
-  creationDate: {
-    type: Date,
-    //Configure to be auto written
-  },
-  updationDate: {
-    type: Date,
-    //Configure to be auto written
-  },
-  completionDate: {
-      type: Date,
-      //Auto Write if completed turns true, Else write null if isCompleted goes false
-  },
-  targetDate:{
+const Item = mongoose.model(
+  "Item",
+  new mongoose.Schema({
+    isCompleted: {
+      type: Boolean, //Check
+      // required: true,
+      // default: false, //Check
+    },
+    createdDate: {
+      type: Date
+    },
+    updatedDate: {
+      type: Date
+    },
+    //   completionDate: {
+    //       type: Date,
+    //       //Auto Write if completed turns true, Else write null if isCompleted goes false
+    //   },
+    deadline: {
       type: Date,
       required: true,
       //Default, tomorrow
       //Past can't be set
       //Maximum, one year
-  },
-  task: {
+    },
+    task: {
       type: String,
-      required: true, 
-      minlength: 3, 
-      maxlength: 255
-  }
-    }) 
+      required: true,
+      minlength: 3,
+      maxlength: 255,
+    },
+  })
 );
 
 // ************* CRUD OPERATIONS ******************//
 
 // Get a single item by Id
 
-app.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res) => {
   const item = await Item.findById(req.params.id)
 
   if (!item) return res.status(404).send("The item with given Id is not found");
@@ -56,13 +57,14 @@ app.get("/:id", async (req, res) => {
 // Get All items in the list
 
 router.get("/", async (req, res) => {
-  const items = await Item.find().sort('targetDate');
+    console.log("Reached Here");
+  const items = await Item.find().sort('deadline');
   res.send(items);
 });
 
 // Create an Item
-app.post("/",async (req, res)=>{
-
+router.post("/", async (req, res)=>{
+    console.log("Reached Here POST")
     const { error } = validateItem(req.body);
 
     if (error){
@@ -70,11 +72,13 @@ app.post("/",async (req, res)=>{
     }
 
     let item = new Item({
-        //Set Auto complete dates
-        isCompleted: req.body.isCompleted,
-        targetDate: req.body.targetDate,
-        task: req.body.task
-    }) 
+      //Set Auto complete dates
+      createdDate: new Date(Date.now()),
+      updatedDate: new Date(Date.now()),
+      isCompleted: false,
+      deadline: req.body.deadline,
+      task: req.body.task,
+    }); 
 
     item = await item.save();
     res.send(item);
@@ -82,7 +86,8 @@ app.post("/",async (req, res)=>{
 
 // Edit an Item
 
-app.put("/:id",async (req, res) => {
+router.put("/:id",async (req, res) => {
+    console.log("Reached Here 1")
 
   //Validate Item
   const { error } = validateItem(req.body);
@@ -90,16 +95,20 @@ app.put("/:id",async (req, res) => {
     return res.status(404).send(error.details[0].message);
   }
 
-  const item = await Item.findOneAndUpdate(
-    id,
-    { new: true, useFindAndModify: false },
-    {
-        $set: {
-          isCompleted: req.body.isCompleted,
-          targetDate: req.body.targetDate
-        },
-    }
-  );
+    console.log("Reached Here 2");
+
+    const item = await Item.findByIdAndUpdate(
+      req.params.id,
+      {
+        updatedDate: new Date(Date.now()),
+        isCompleted: req.body.isCompleted,
+        deadline: req.body.deadline,
+        task: req.body.task
+      },
+      { new: true, useFindAndModify: false }
+    );
+      
+    console.log(req.body);
 
   if (!item) {
     return res.status(404).send("The item with the given ID was not found");
@@ -110,23 +119,30 @@ app.put("/:id",async (req, res) => {
 
 //Delete an Item
 
-app.delete("/:id", async (req, res) => {
-
-  const item = await Item.findByIdAndRemove(req.params.id);
-
-  if (!item) {
-    return res.status(404).send("The item with The given ID is not available");
-  }
-
-  //Return the same item
-  res.send(item);
+router.delete("/:id", async (req, res) => {
+    try {
+      if (!validateObjectId(req.params.id))
+        return res.send(formatResult({ status: 400, message: "Invalid id" }));
+      const ItemId = await Item.findOneAndDelete({
+        _id: req.params.id,
+      });
+      if (!ItemId)
+        return res.send(
+          formatResult({ status: 404, message: "Item not found" })
+        );
+      return res.send(
+        formatResult({ status: 200, message: "Item deleted successfully" })
+      );
+    } catch (e) {
+      res.send(formatResult({ status: 500, message: e }));
+    }
 });
 
 //Function to validate an item
 function validateItem(item) {
     const schema = Joi.object({
       isCompleted: Joi.boolean().truthy("true").falsy("false"),
-      targetDate: Joi.date().required(),
+      deadline: Joi.date().required(),
       task: Joi.string().required()
     });
 
