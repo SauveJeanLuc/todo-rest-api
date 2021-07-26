@@ -1,9 +1,15 @@
+const config = require('config')
 const mongoose = require('mongoose');
 const items = require('./routes/item.route');
 const users = require('./routes/user.route');
 const auth = require('./routes/auth.route');
 const express = require('express');
 const app = express();
+
+if (!config.get("jwtPrivateKey")) {
+  console.error("FATAL ERROR: jwtPrivateKey is not defined.");
+  process.exit(1);
+}
 
 //Connect to MongoDB
 mongoose
