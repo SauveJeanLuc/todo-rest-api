@@ -1,10 +1,10 @@
+const _ = require("lodash");
 const { User, validate } = require("../models/user.model");
 const mongoose = require("mongoose");
 const express = require("express");
 const router = express.Router();
 
 const { formatResult, validateObjectId } = require("../utils/import");
-
 
 router.get("/:id", async (req, res) => {
   try {
@@ -50,16 +50,20 @@ router.post("/", async (req, res) => {
       return res.status(400).send(error.details[0].message);
     }
 
-    let user = new User({
+    let user = await User.findOne({ email: req.body.email });
+    if (user) return res.status(400).send("User already registered.");
+
+    user = new User({
       createdDate: new Date(Date.now()),
       updatedDate: new Date(Date.now()),
       userName: req.body.userName,
       email: req.body.email,
-      password: req.body.password
+      password: req.body.password,
     });
 
     user = await user.save();
-    res.send(user);
+
+    res.send(_.pick(user, ["userName", "email"]));
   } catch (err) {
     res.send(
       formatResult({
@@ -86,7 +90,7 @@ router.put("/:id", async (req, res) => {
       {
         email: req.body.email,
         userName: req.body.userName,
-        updatedDate: new Date(Date.now())
+        updatedDate: new Date(Date.now()),
       },
       { new: true, useFindAndModify: false }
     );
@@ -131,6 +135,5 @@ router.delete("/:id", async (req, res) => {
     res.send(formatResult({ status: 500, message: e }));
   }
 });
-
 
 module.exports = router;
