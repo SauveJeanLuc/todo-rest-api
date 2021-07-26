@@ -8,13 +8,6 @@ mongoose
     .catch((err)=> console.error("Could not Connect to MongoDB"));
 
 //Create a Schema
-
-// const items =[
-//     { id: 1, completed: true, date: "2021-07-22", task: "Complete Restful API using Express" },
-//     { id: 2, completed: false, date: "2021-07-23", task: "CRUD with Mongoose" },
-//     { id: 3, completed: false, date: "2021-07-24", task: "Authentication and Authorization" }
-// ]
-
 const itemSchema = new mongoose.Schema({
   isCompleted: {
     type: Boolean, //Check
@@ -46,22 +39,31 @@ const itemSchema = new mongoose.Schema({
   }
 });
 
+const Item = mongoose.model('Item', itemSchema);
+
 // ************* CRUD OPERATIONS ******************//
 
 // Get a single item by Id
-app.get("/api/items/:id", (req, res)=>{
-    const item = items.find( (c)=> c.id === parseInt(req.params.id));
+// app.get("/api/items/:id", (req, res)=>{
+//     const item = items.find( (c)=> c.id === parseInt(req.params.id));
 
-    if (!item) 
-        return res.status(404).send('The item with given Id is not found')
-    res.send(item);
+//     if (!item) 
+//         return res.status(404).send('The item with given Id is not found')
+//     res.send(item);
 
-});
+// });
+
+async function getItemById(id){
+    const item = await Item
+        .find({id: id})
+
+    console.log(item);
+}
 
 // Get All items in the list
-app.get("/api/items/", (req, res)=>{
-    res.send(items);
-})
+// app.get("/api/items/", (req, res)=>{
+//     res.send(items);
+// })
 
 // Create an Item
 app.post("/api/items", (req, res)=>{
