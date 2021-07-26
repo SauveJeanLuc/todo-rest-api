@@ -1,4 +1,3 @@
-//import dependencies
 const {Item, validate} = require('../models/item.model')
 const mongoose = require('mongoose');
 const express = require('express');
@@ -8,12 +7,10 @@ const {formatResult, validateObjectId} = require("../utils/import")
 
 
 
-// Get a single item by Id
-
 router.get("/:id", async (req, res) => {
 
   try {
-    //Validate params
+
     if (!validateObjectId(req.params.id)) {
       return res.send(formatResult({ status: 400, message: "Invalid id" }));
     }
@@ -38,8 +35,6 @@ router.get("/:id", async (req, res) => {
 
 });
 
-// Get All items in the list
-
 router.get("/", async (req, res) => {
   try {
     const items = await Item.find().sort("deadline");
@@ -54,7 +49,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Create an Item
+
 router.post("/", async (req, res)=>{
     try {
         const { error } = validate(req.body);
@@ -83,14 +78,13 @@ router.post("/", async (req, res)=>{
 
 })
 
-// Edit an Item
 router.put("/:id",async (req, res) => {
     try{
-      //Validate params
+
       if (!validateObjectId(req.params.id)){
         return res.send(formatResult({ status: 400, message: "Invalid id" }));
       }
-      //Validate Body
+
       const { error } = validate(req.body);
       if (error) {
         return res.status(404).send(error.details[0].message);
@@ -131,8 +125,6 @@ router.put("/:id",async (req, res) => {
 
 
 });
-
-//Delete an Item
 
 router.delete("/:id", async (req, res) => {
     try {
