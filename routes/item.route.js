@@ -35,11 +35,8 @@ router.get("/:id", auth, async (req, res) => {
 
 router.get("/", auth, async (req, res) => {
   try {
-    // const items = await Item.find()
-    console.log(req.user._id)
     const items = await Item.find({userId: req.user._id})   
     .sort("deadline");
-    console.log("Items: " + items);
     res.send(items);
   } catch (err) {
     res.send(

@@ -32,7 +32,6 @@ router.get("/currentUser", auth, async (req, res) => {
 router.get("/", [auth, admin], async (req, res) => {
   try {
     const users = await User.find().sort("createdDate").select("-password");
-    console.log(users);
     res.send(users);
   } catch (err) {
     res.send(
