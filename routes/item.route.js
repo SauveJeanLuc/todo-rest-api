@@ -1,3 +1,4 @@
+const auth = require('../middleware/auth')
 const {Item, validate} = require('../models/item.model')
 const mongoose = require('mongoose');
 const express = require('express');
@@ -7,7 +8,7 @@ const {formatResult, validateObjectId} = require("../utils/import")
 
 
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
 
   try {
 
@@ -35,7 +36,7 @@ router.get("/:id", async (req, res) => {
 
 });
 
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     const items = await Item.find().sort("deadline");
     res.send(items);
@@ -50,7 +51,7 @@ router.get("/", async (req, res) => {
 });
 
 
-router.post("/", async (req, res)=>{
+router.post("/", auth, async (req, res)=>{
     
     try {
         const { error } = validate(req.body);
@@ -80,7 +81,7 @@ router.post("/", async (req, res)=>{
 
 })
 
-router.put("/:id",async (req, res) => {
+router.put("/:id", auth, async (req, res) => {
     try{
 
       if (!validateObjectId(req.params.id)){
@@ -128,7 +129,7 @@ router.put("/:id",async (req, res) => {
 
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
     try {
       if (!validateObjectId(req.params.id))
         return res.send(formatResult({ status: 400, message: "Invalid id" }));
