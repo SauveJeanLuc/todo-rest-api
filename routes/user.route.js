@@ -1,3 +1,5 @@
+const auth = require('../middleware/auth')
+const admin = require('../middleware/admin')
 const jwt = require('jsonwebtoken')
 const config = require('config')
 const bcrypt = require("bcrypt");
@@ -9,13 +11,11 @@ const router = express.Router();
 
 const { formatResult, validateObjectId } = require("../utils/import");
 
-router.get("/:id", async (req, res) => {
+router.get("/currentUser", auth, async (req, res) => {
   try {
-    if (!validateObjectId(req.params.id)) {
-      return res.send(formatResult({ status: 400, message: "Invalid id" }));
-    }
 
-    const user = await User.findById(req.params.id);
+
+    const user = await User.findById(req.user._id).select('-password');
 
     if (!user)
       return res.send(formatResult({ status: 404, message: "User not found" }));
@@ -31,7 +31,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", [auth, admin], async (req, res) => {
   try {
     const users = await User.find().sort("createdDate");
     res.send(_.pick(users, ["userName", "email"]));
@@ -85,48 +85,48 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
-  try {
-    if (!validateObjectId(req.params.id)) {
-      return res.send(formatResult({ status: 400, message: "Invalid id" }));
-    }
+// router.put("/:id", async (req, res) => {
+//   try {
+//     if (!validateObjectId(req.params.id)) {
+//       return res.send(formatResult({ status: 400, message: "Invalid id" }));
+//     }
 
-    const { error } = validate(req.body);
-    if (error) {
-      return res.status(404).send(error.details[0].message);
-    }
+//     const { error } = validate(req.body);
+//     if (error) {
+//       return res.status(404).send(error.details[0].message);
+//     }
 
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      {
-        email: req.body.email,
-        userName: req.body.userName,
-        updatedDate: new Date(Date.now()),
-      },
-      { new: true, useFindAndModify: false }
-    );
+//     const user = await User.findByIdAndUpdate(
+//       req.params.id,
+//       {
+//         email: req.body.email,
+//         userName: req.body.userName,
+//         updatedDate: new Date(Date.now()),
+//       },
+//       { new: true, useFindAndModify: false }
+//     );
 
-    if (!user) {
-      return res.send(formatResult({ status: 404, message: "User not found" }));
-    }
-    return res.send(
-      formatResult({
-        status: 200,
-        message: "User updated successfully",
-        data: _.pick(user, ["userName", "email"]),
-      })
-    );
-  } catch (err) {
-    res.send(
-      formatResult({
-        status: 500,
-        message: err,
-      })
-    );
-  }
-});
+//     if (!user) {
+//       return res.send(formatResult({ status: 404, message: "User not found" }));
+//     }
+//     return res.send(
+//       formatResult({
+//         status: 200,
+//         message: "User updated successfully",
+//         data: _.pick(user, ["userName", "email"]),
+//       })
+//     );
+//   } catch (err) {
+//     res.send(
+//       formatResult({
+//         status: 500,
+//         message: err,
+//       })
+//     );
+//   }
+// });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id",[auth, admin], async (req, res) => {
   try {
     if (!validateObjectId(req.params.id))
       return res.send(formatResult({ status: 400, message: "Invalid id" }));
