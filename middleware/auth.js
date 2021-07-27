@@ -7,11 +7,11 @@ function auth(req, res, next) {
 
     try{
       const decoded = jwt.verify(token, config.get('jwtPrivateKey'));
-      res.user = decoded;
+      req.user = decoded;
       next();
     }
     catch(ex){
-        res.status.send('Invalid token');
+        res.status(400).send('Invalid token');
     }
 }
 

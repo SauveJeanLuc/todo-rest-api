@@ -13,15 +13,13 @@ const { formatResult, validateObjectId } = require("../utils/import");
 
 router.get("/currentUser", auth, async (req, res) => {
   try {
-
-
     const user = await User.findById(req.user._id).select('-password');
 
     if (!user)
       return res.send(formatResult({ status: 404, message: "User not found" }));
 
     res.send(_.pick(user, ["userName", "email"]));
-  } catch (err) {
+  } catch (err) {  
     res.send(
       formatResult({
         status: 500,
@@ -33,8 +31,9 @@ router.get("/currentUser", auth, async (req, res) => {
 
 router.get("/", [auth, admin], async (req, res) => {
   try {
-    const users = await User.find().sort("createdDate");
-    res.send(_.pick(users, ["userName", "email"]));
+    const users = await User.find().sort("createdDate").select("-password");
+    console.log(users);
+    res.send(users);
   } catch (err) {
     res.send(
       formatResult({
@@ -85,46 +84,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// router.put("/:id", async (req, res) => {
-//   try {
-//     if (!validateObjectId(req.params.id)) {
-//       return res.send(formatResult({ status: 400, message: "Invalid id" }));
-//     }
-
-//     const { error } = validate(req.body);
-//     if (error) {
-//       return res.status(404).send(error.details[0].message);
-//     }
-
-//     const user = await User.findByIdAndUpdate(
-//       req.params.id,
-//       {
-//         email: req.body.email,
-//         userName: req.body.userName,
-//         updatedDate: new Date(Date.now()),
-//       },
-//       { new: true, useFindAndModify: false }
-//     );
-
-//     if (!user) {
-//       return res.send(formatResult({ status: 404, message: "User not found" }));
-//     }
-//     return res.send(
-//       formatResult({
-//         status: 200,
-//         message: "User updated successfully",
-//         data: _.pick(user, ["userName", "email"]),
-//       })
-//     );
-//   } catch (err) {
-//     res.send(
-//       formatResult({
-//         status: 500,
-//         message: err,
-//       })
-//     );
-//   }
-// });
 
 router.delete("/:id",[auth, admin], async (req, res) => {
   try {
