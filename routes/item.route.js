@@ -1,4 +1,5 @@
 const auth = require('../middleware/auth')
+const admin = require("../middleware/admin");
 const {Item, validate} = require('../models/item.model')
 const mongoose = require('mongoose');
 const express = require('express');
@@ -11,20 +12,16 @@ const {formatResult, validateObjectId} = require("../utils/import")
 router.get("/:id", auth, async (req, res) => {
 
   try {
-
     if (!validateObjectId(req.params.id)) {
       return res.send(formatResult({ status: 400, message: "Invalid id" }));
     }
 
-    const item = await Item.findById(req.params.id);
+    const item = await Item.findOne({ _id: req.params.id, userId: req.user._id});
 
     if (!item)
-        return res.send(
-        formatResult({ status: 404, message: "Item not found" })
-    );
+      return res.send(formatResult({ status: 404, message: "Item not found" }));
 
     res.send(item);
-
   } catch (err) {
     res.send(
       formatResult({
@@ -38,7 +35,11 @@ router.get("/:id", auth, async (req, res) => {
 
 router.get("/", auth, async (req, res) => {
   try {
-    const items = await Item.find().sort("deadline");
+    // const items = await Item.find()
+    console.log(req.user._id)
+    const items = await Item.find({userId: req.user._id})   
+    .sort("deadline");
+    console.log("Items: " + items);
     res.send(items);
   } catch (err) {
     res.send(
@@ -64,7 +65,9 @@ router.post("/", auth, async (req, res)=>{
             createdDate: new Date(Date.now()),
             updatedDate: new Date(Date.now()),
             deadline: req.body.deadline,
-            task: req.body.task
+            task: req.body.task,
+            userId: req.user._id, 
+            isCompleted: false
         });
 
         item = await item.save();
@@ -93,10 +96,13 @@ router.put("/:id", auth, async (req, res) => {
         return res.status(404).send(error.details[0].message);
       }
 
-      const item = await Item.findByIdAndUpdate(
-        req.params.id,
+      const item = await Item.findOneAndUpdate(
+        { _id: req.params.id, userId: req.user._id},
         {
-          completedDate: req.body.isCompleted===true||req.body.isCompleted==="true" ? new Date(): null,
+          completedDate:
+            req.body.isCompleted === true || req.body.isCompleted === "true"
+              ? new Date()
+              : null,
           updatedDate: new Date(Date.now()),
           isCompleted: req.body.isCompleted,
           deadline: req.body.deadline,
@@ -135,6 +141,7 @@ router.delete("/:id", auth, async (req, res) => {
         return res.send(formatResult({ status: 400, message: "Invalid id" }));
       const item = await Item.findOneAndDelete({
         _id: req.params.id,
+        userId: req.user._id
       });
       if (!item)
         return res.send(
