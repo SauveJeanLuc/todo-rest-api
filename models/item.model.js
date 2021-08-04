@@ -29,7 +29,7 @@ const Item = mongoose.model(
       required: true,
       minlength: 3,
       maxlength: 255,
-      unique: true,
+      // unique: true,
     },
     userId: { 
       type: mongoose.Schema.Types.ObjectId,
